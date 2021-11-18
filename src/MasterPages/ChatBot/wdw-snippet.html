@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+      <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+      <script
+         src="https://code.jquery.com/jquery-3.4.1.js"
+         integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+         crossorigin="anonymous"></script>
+      <style> 
+         .chatwindow{
+         position: fixed;
+         left: 0;
+         bottom: 0;
+         right: 0;
+         }
+         .chatmin{
+         font-size: 11px;
+         max-height: 181px;
+         overflow:scroll;
+         }
+         .chatheader{
+         font-size: 13px;
+         }
+         .chat_message_head{
+         font-size: 12px;
+         }
+         .messageBox{
+         width:100%;
+         max-width:100%;
+         }
+      </style>
+   </head>
+   <body onload="setDedualtChat();chatExpander('max')">
+      <div class="container-fluid chatwindow ">
+         <div class="row ">
+            <div class="col-sm-7">
+            </div>
+            <div class="col-sm-5 rounded-sm border-danger border border-sm " style="position: fixed;bottom: 0;right: 0;width: 100%;/* height: 300px; */ ">
+               <div class="card bg-light shadow-sm p-1 mb-1 bg-white " >
+                  <div class="card-header chatheader">
+                     <div class="row">
+                        <div class="col-sm-6">
+                           Header
+                        </div>
+                        <div class="col-sm-6 text-right btn-minimize" >
+                           <i class="fa fa-times-circle minimize" onclick="chatExpander('min')" aria-hidden="true"></i>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="card-body chatmin">
+                     <h5 class="card-title"></h5>
+                  </div>
+               </div>
+               <div class="row messageController">
+                  <div class="col-sm-10">
+                     <textarea class="messageBox">
+                     </textarea>
+                  </div>
+                  <div class="col-sm-2">
+                     <i class="fa fa-eraser float-left text-danger clearMessage" aria-hidden="true"></i>
+                     <i class="fa fa-paper-plane float-right text-danger sendMessage" aria-hidden="true"></i> 
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script>
+         let initial=false;
+         let continueChatFlag=false;
+         let feedBackTable='<div class="cotainer ">'+
+         '  	<div class="row">'+
+         '		<div class="col-sm-12">'+
+         '		<div class="input-group mb-3">'+
+         '			<textarea class="text-primary"  placeholder="Leave Your Feed Back Here" style="width:100%;" name="feedback_module" id="feedback_module" ></textarea>'+
+         '		</div>'+
+         '			</div>'+
+         '		<div class="col-sm-6">'+
+         '		     <div class="input-group mb-3">'+
+         '			  <div class="input-group-append">'+
+         '				<label class="input-group-text" for="feedback_priority">Priority</label>'+
+         '			  </div>'+
+         '			  <select class="custom-select" id="feedback_priority">'+
+         '				<option value="1" selected>Low</option>'+
+         '				<option value="2">Medium</option>'+
+         '				<option value="3">High</option>'+
+         '			  </select>'+
+         '			</div> '+
+         '		 </div>'+
+         '		<div class="col-sm-6">'+
+         '			<div class="input-group mb-3">'+
+         '			 <div class="input-group-append">'+
+         '				<label class="input-group-text" for="current_feedback_type">Type</label>'+
+         '			  </div>'+
+         '			  <select class="custom-select" id="feedback_type">'+
+         '				<option value="1" selected>General</option>'+
+         '				<option value="2">Bug/Error</option>'+
+         '				<option value="3">Enhancement</option>'+
+         '			  </select>'+
+         '			</div>'+
+         '		</div>'+
+         '	</div>		'+ 
+         '  	<div class="row">'+
+         '		<div class="col-sm-10">'+
+         '		</div>		'+
+         '		<div class="col-sm-2">'+
+         '	<i class="fa fa-share-square-o" style="color:red !important" aria-hidden="true"></i>'+
+         '		</div>		'+
+         '	</div>'  
+         '</div>;		';
+         let txt = ' {'+
+         ' 	"init": {'+
+         ' 		"0": "Hi! How can i help you?",'+
+         ' 		"1": "Hi! How can i help you Today?",'+
+         ' 		"2": "Hi! How can i help you Now?"'+
+         ' 	},'+
+         ' 	"initSelector": {'+
+         ' 		"0": "0: App Logs ",'+
+         ' 		"1": "1: Transactional Logs ",'+
+         ' 		"2": "2: Service Logs",'+
+         '		"3": "3: Error Logs",'+
+         ' 		"4": "4: Feadback Form"'+
+         ' 	},'+
+         '	"initResponse":{'+
+         '	  "0":"<p>Please provide application name|search key such as string timeFrame or key eith time frame as shown in 4)  Examples 1) cssop|Enterprise:123123123  2) cssop|Navigator 1231 3) cssop|29:Nov:2019 4)cssop|Enterprise|29:Nov:2019</p> ",'+
+         '	  "1":"<p>Please provide application name|search key such as string timeFrame or key eith time frame as shown in 4)  Examples 1) cssop|tn_xyz  2) cssop|ar_123123123 3) cssop|29:Nov:2019 4)cssop|ar_123123123|29:Nov:2019</p> ",'+
+         '	  "2":"<p>Please provide application name|service name|search key such as string timeFrame or key eith time frame as shown in 4) Examples 1) cssop|esap|Enterprise:123123123 2) cssop|xo|admin:1231 3) cssop|xo|29:Nov:2019 4)cssop|esap|admin:1231|29:Nov:2019</p> ",'+
+         '	  "3":"<p>Please provide application name|search key such as string timeFrame or key eith time frame as shown in 4) Examples 1) cssop|tn_123123123  2) cssop|ar_123123123 3) cssop|29:Nov:2019 4)cssop|ar_123123123|29:Nov:2019</p> ",'+
+         '	  "4": "feed" '+
+         '	} }';
+          
+          let obj = JSON.parse(txt);
+          
+         function chatExpander(oper){
+         	if(oper==='min'){
+         		$(".chatmin").hide();
+         		$(".messageController").hide();
+         		$(".btn-minimize").empty();
+         		$(".btn-minimize").html('<i class="fa fa-plus minimize" onclick="chatExpander(\'max\')" aria-hidden="true"></i>');
+         	}else{
+         		$(".btn-minimize").empty(); 
+         		$(".chatmin").show();
+         		$(".messageController").show();
+         		$(".btn-minimize").html('<i class="fa fa-times-circle minimize" onclick="chatExpander(\'min\')" aria-hidden="true"></i>');
+         	}
+         }
+		 
+          function setDedualtChat(){
+          $('.messageBox').empty();
+         	let botinitMsg =	'<p>'+obj.init[Math.floor(Math.random() * 10 /3)]+'</p>';
+         	initial=true;
+         	$.each(obj.initSelector, function(index) {
+         			botinitMsg=botinitMsg+'<p>'+obj.initSelector[index]+'</p>';;
+         				 });
+         		   let messageSent='<div class="row chat_user_row">'+
+         						   
+         					   '      <div class="col-sm-8">'+
+         					   '         <span class="card-text text-primary">'+botinitMsg+'</span>'+
+         					   '         <hr>'+
+         					  '       </div>'+
+         					   ' <div class="col-sm-4">'+
+         						 '       <div class="row">'+
+         							'       <div class="col-sm-6">'+
+         						   '           <h6 class="chat_message_head">Bot</h6>'+
+         						   '        </div> <div class="col-sm-6">'+
+         						  '            <div class="text-center">'+
+         						  '              <i style="font-size: 20px;" class="fa fa-android text-warning" aria-hidden="true"></i>'+
+         						 '             </div>'+
+         						 '          </div>'+
+         						 '       </div>'+
+         						'     </div>'+
+         					   '   </div>';
+         	
+         		
+         		$('.chatmin').append(messageSent);
+         	
+          }
+         	
+         $(".sendMessage").click(function() {
+          let userMessage=$('.messageBox').val().trim();
+          let messageSent=''; 
+         // if(!(continueChatFlag) && (userMessage.toLowerCase()==='yes' || userMessage.toLowerCase()==='y')){
+         	//initial=true;
+          //}
+         	if(initial){
+         			 switch(userMessage) {
+         				  case '0':
+         					  messageSent=setUserMessage(obj.initResponse[0]);
+         					break;
+         				  case '1':
+         					  messageSent=setUserMessage(obj.initResponse[1]);
+         					break;
+         				  case '2':
+         					  messageSent=setUserMessage(obj.initResponse[2]);
+         					break;
+         				  case '3':
+         					 messageSent=setUserMessage(obj.initResponse[3]);
+         					break;
+         				  case '4':
+         					 messageSent=setUserMessage(feedBackTable);
+         					break;
+         				  
+         				}
+         		initial=false;
+         	}
+         	else{
+         		  messageSent=setUserMessage(userMessage);
+         		/*
+         		 $.ajax({
+         		  url: "http://localhost/iac/getChat/getResponse",
+         		  method: "POST",
+         		  data: { message : $('.messageBox').val(),
+         				 timeStamp: $.now()
+         				  },
+         		  dataType: "html"
+         		})
+         		  .done(function() {
+         			alert( "success" );
+         		  })
+         		  .fail(function() {
+         			alert( "error" );
+         		  })
+         		  .always(function() {
+         			alert( "complete" );
+         		  });
+         		*/
+         }
+         
+		 $('.chatmin').append(messageSent);
+         continueChat();
+         });
+		 
+         $('.clearMessage').click(function(){
+         	$('.chatmin').empty();
+         	$('.messageBox').val('');
+         	setDedualtChat();
+         });
+         
+         function setUserMessage(userMessage){
+           messageSent='<div class="row chat_user_row">'+
+         							' <div class="col-sm-4">'+
+         						 '       <div class="row">'+
+         							'       <div class="col-sm-6">'+
+         						   '           <h6 class="chat_message_head">User</h6>'+
+         						   '        </div> <div class="col-sm-6">'+
+         						  '            <div class="text-center">'+
+         						  '               <i style="font-size: 20px;" class="fa fa-user-circle-o text-primary" aria-hidden="true"></i>'+
+         						 '             </div>'+
+         						 '          </div>'+
+         						 '       </div>'+
+         						'     </div>'+
+         					   '      <div class="col-sm-8">'+
+         					   '         <span class="card-text text-info">'+userMessage+'</span>'+
+         					   '         <hr>'+
+         					  '       </div>'+
+         					   '   </div>';
+         
+         		;
+         		/*
+         		 $.ajax({
+         		  url: "http://localhost/iac/getChat/getResponse",
+         		  method: "POST",
+         		  data: { message : $('.messageBox').val(),
+         				 timeStamp: $.now()
+         				  },
+         		  dataType: "html"
+         		})
+         		  .done(function() {
+         			alert( "success" );
+         		  })
+         		  .fail(function() {
+         			alert( "error" );
+         		  })
+         		  .always(function() {
+         			alert( "complete" );
+         		  });
+         		*/
+          
+         $('.chatmin').append(messageSent);
+         //continueChat();
+         }
+         function continueChat(){
+         let   messageSent=setUserMessage('do you want to continue.....?');
+         $('.chatmin').append(messageSent);
+         
+         }
+      </script>
+      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+   </body>
+</html>

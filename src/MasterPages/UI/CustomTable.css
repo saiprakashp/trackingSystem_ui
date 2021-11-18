@@ -1,0 +1,30 @@
+.expand-button{
+    position: relative;
+    text-align: center;
+}
+
+.collapsed .expand-button:after
+{
+  transform: translate(0, -50%);
+  content: '+';
+}
+
+.expand-button::after
+{
+  content: '-';
+}
+
+#customDataTable .sortable{
+  float:right;
+  vertical-align: middle;
+}
+#customDataTable .sortable:before{
+  opacity:0.5;
+}
+
+#customDataTable .sortable:hover:before{
+  opacity:1;
+}
+#customDataTable .active:before{
+  opacity:1;
+}

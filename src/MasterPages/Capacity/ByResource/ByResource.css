@@ -1,0 +1,10 @@
+.titleFont{
+    align-self: center;
+    text-align: right;
+}
+.searchCrt{
+    align-self: center;
+}
+.searchCrt div label{
+    display: none !important;
+}

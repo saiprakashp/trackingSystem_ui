@@ -1,0 +1,8 @@
+#tab_logic{
+    margin-bottom: 0.5em !important;
+    table-layout: inherit;
+    width: 100%;
+}
+#tab_logic .select-name{
+    width:150px;
+}

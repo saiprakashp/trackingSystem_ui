@@ -1,0 +1,17 @@
+.namMain{
+    margin-top: -0.45rem;
+}
+
+@media (max-width: 500px) {
+    .mflexNav {
+        display: flex !important;
+        flex-direction: column !important;;
+    }
+
+    .mflexNav > div {
+        width: auto;
+        text-align: center !important;;
+        height: auto;
+    }
+
+}
